@@ -78,6 +78,7 @@ GLfloat gCubeVertexData[216] =
 @interface GameViewController () {
     GLuint _program;
     
+    float ballY;
     GLKMatrix4 ballMatrix;
     GLKMatrix4 _ballProjection;
     GLKMatrix3 _ballNormal;
@@ -103,6 +104,7 @@ GLfloat gCubeVertexData[216] =
 - (BOOL)compileShader:(GLuint *)shader type:(GLenum)type file:(NSString *)file;
 - (BOOL)linkProgram:(GLuint)prog;
 - (BOOL)validateProgram:(GLuint)prog;
+- (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p;
 @end
 
 @implementation GameViewController
@@ -184,6 +186,7 @@ GLfloat gCubeVertexData[216] =
     ballMatrix = GLKMatrix4Identity;
     leftPaddleMatrix = GLKMatrix4MakeTranslation(-20.0, 0.0, 0.0);
     rightPaddleMatrix = GLKMatrix4MakeTranslation(20.0, 0.0, 0.0);
+    ballY = 0.0;
 }
 
 - (void)tearDownGL
@@ -213,6 +216,7 @@ GLfloat gCubeVertexData[216] =
     
     GLKMatrix4 ballResultMatrix = GLKMatrix4Identity;
     ballResultMatrix = GLKMatrix4Multiply(ballMatrix, cameraMatrix);
+    ballResultMatrix = GLKMatrix4Translate(ballResultMatrix, 0.0, ballY, 0.0);
     _ballNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(ballResultMatrix), NULL);
     _ballProjection = GLKMatrix4Multiply(projectionMatrix, ballResultMatrix);
     
@@ -227,6 +231,12 @@ GLfloat gCubeVertexData[216] =
     rightPaddleResultMatrix = GLKMatrix4Scale(rightPaddleResultMatrix, 1.0, 4.0, 1.0);
     _rightPaddleNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(rightPaddleResultMatrix), NULL);
     _rightPaddleProjection = GLKMatrix4Multiply(projectionMatrix, rightPaddleResultMatrix);
+    
+    //move ball test
+    GLKVector3 ballPos = GLKVector3Make(ballResultMatrix.m30, ballResultMatrix.m31, ballResultMatrix.m32);
+    if ([self inScreen:projectionMatrix point:ballPos]) {
+        ballY += 0.1;
+    }
     
     
 }
@@ -405,5 +415,17 @@ GLfloat gCubeVertexData[216] =
     
     return YES;
 }
+- (IBAction)OnScreenTouch:(UIPanGestureRecognizer *)sender {
+    CGPoint point = [sender locationInView:nil];
+    NSLog(@"x: %f y: %f", point.x, point.y);
+}
+
+- (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p {
+    GLKVector4 Pclip = GLKMatrix4MultiplyVector4(M, GLKVector4Make(p.x, p.y, p.z, 1.0));
+    BOOL res = fabsf(Pclip.x) < Pclip.w && fabsf(Pclip.y) < Pclip.w && 0 < Pclip.z && Pclip.z < Pclip.w;
+    return res;
+}
+
+
 
 @end
