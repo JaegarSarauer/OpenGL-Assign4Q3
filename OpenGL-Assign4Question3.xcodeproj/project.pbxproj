@@ -15,6 +15,8 @@
 		EE56C5481E91C8BF0093F265 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE56C5461E91C8BF0093F265 /* Main.storyboard */; };
 		EE56C54A1E91C8BF0093F265 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE56C5491E91C8BF0093F265 /* Assets.xcassets */; };
 		EE56C54D1E91C8BF0093F265 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE56C54B1E91C8BF0093F265 /* LaunchScreen.storyboard */; };
+		EE56C5591E91E16E0093F265 /* Box2D in Resources */ = {isa = PBXBuildFile; fileRef = EE56C5581E91E16E0093F265 /* Box2D */; };
+		EE56C55C1E91E25B0093F265 /* Box2DWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = EE56C55A1E91E25B0093F265 /* Box2DWrapper.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,9 @@
 		EE56C5491E91C8BF0093F265 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EE56C54C1E91C8BF0093F265 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EE56C54E1E91C8BF0093F265 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EE56C5581E91E16E0093F265 /* Box2D */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Box2D; path = "OpenGL-Assign4Question3/Box2D"; sourceTree = "<group>"; };
+		EE56C55A1E91E25B0093F265 /* Box2DWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Box2DWrapper.mm; sourceTree = "<group>"; };
+		EE56C55B1E91E25B0093F265 /* Box2DWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DWrapper.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +51,7 @@
 		EE56C52D1E91C8BF0093F265 = {
 			isa = PBXGroup;
 			children = (
+				EE56C5581E91E16E0093F265 /* Box2D */,
 				EE56C5381E91C8BF0093F265 /* OpenGL-Assign4Question3 */,
 				EE56C5371E91C8BF0093F265 /* Products */,
 			);
@@ -73,6 +79,8 @@
 				EE56C54B1E91C8BF0093F265 /* LaunchScreen.storyboard */,
 				EE56C54E1E91C8BF0093F265 /* Info.plist */,
 				EE56C5391E91C8BF0093F265 /* Supporting Files */,
+				EE56C55A1E91E25B0093F265 /* Box2DWrapper.mm */,
+				EE56C55B1E91E25B0093F265 /* Box2DWrapper.h */,
 			);
 			path = "OpenGL-Assign4Question3";
 			sourceTree = "<group>";
@@ -144,6 +152,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE56C5591E91E16E0093F265 /* Box2D in Resources */,
 				EE56C5481E91C8BF0093F265 /* Main.storyboard in Resources */,
 				EE56C5421E91C8BF0093F265 /* Shader.vsh in Resources */,
 				EE56C54A1E91C8BF0093F265 /* Assets.xcassets in Resources */,
@@ -160,6 +169,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE56C53E1E91C8BF0093F265 /* AppDelegate.m in Sources */,
+				EE56C55C1E91E25B0093F265 /* Box2DWrapper.mm in Sources */,
 				EE56C5451E91C8BF0093F265 /* GameViewController.m in Sources */,
 				EE56C53B1E91C8BF0093F265 /* main.m in Sources */,
 			);
@@ -280,10 +290,13 @@
 		EE56C5521E91C8BF0093F265 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 2592K8NH67;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/OpenGL-Assign4Question3";
 				INFOPLIST_FILE = "OpenGL-Assign4Question3/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.atomaton.OpenGL-Assign4Question3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -292,10 +305,13 @@
 		EE56C5531E91C8BF0093F265 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 2592K8NH67;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/OpenGL-Assign4Question3";
 				INFOPLIST_FILE = "OpenGL-Assign4Question3/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.atomaton.OpenGL-Assign4Question3";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -320,6 +336,7 @@
 				EE56C5531E91C8BF0093F265 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

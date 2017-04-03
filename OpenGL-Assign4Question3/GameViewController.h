@@ -6,9 +6,105 @@
 //  Copyright © 2017 Jaegar Sarauer. All rights reserved.
 //
 
+
+#include <stdio.h>
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 
-@interface GameViewController : GLKViewController
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+// Uniform index.
+enum
+{
+    UNIFORM_MODELVIEWPROJECTION_MATRIX,
+    UNIFORM_NORMAL_MATRIX,
+    NUM_UNIFORMS
+};
+GLint uniforms[NUM_UNIFORMS];
+
+// Attribute index.
+enum
+{
+    ATTRIB_VERTEX,
+    ATTRIB_NORMAL,
+    NUM_ATTRIBUTES
+};
+
+GLfloat gCubeVertexData[216] =
+{
+    // Data layout for each line below is:
+    // positionX, positionY, positionZ,     normalX, normalY, normalZ,
+    0.5f, -0.5f, -0.5f,        1.0f, 0.0f, 0.0f,
+    0.5f, 0.5f, -0.5f,         1.0f, 0.0f, 0.0f,
+    0.5f, -0.5f, 0.5f,         1.0f, 0.0f, 0.0f,
+    0.5f, -0.5f, 0.5f,         1.0f, 0.0f, 0.0f,
+    0.5f, 0.5f, -0.5f,          1.0f, 0.0f, 0.0f,
+    0.5f, 0.5f, 0.5f,         1.0f, 0.0f, 0.0f,
+    
+    0.5f, 0.5f, -0.5f,         0.0f, 1.0f, 0.0f,
+    -0.5f, 0.5f, -0.5f,        0.0f, 1.0f, 0.0f,
+    0.5f, 0.5f, 0.5f,          0.0f, 1.0f, 0.0f,
+    0.5f, 0.5f, 0.5f,          0.0f, 1.0f, 0.0f,
+    -0.5f, 0.5f, -0.5f,        0.0f, 1.0f, 0.0f,
+    -0.5f, 0.5f, 0.5f,         0.0f, 1.0f, 0.0f,
+    
+    -0.5f, 0.5f, -0.5f,        -1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,       -1.0f, 0.0f, 0.0f,
+    -0.5f, 0.5f, 0.5f,         -1.0f, 0.0f, 0.0f,
+    -0.5f, 0.5f, 0.5f,         -1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,       -1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, 0.5f,        -1.0f, 0.0f, 0.0f,
+    
+    -0.5f, -0.5f, -0.5f,       0.0f, -1.0f, 0.0f,
+    0.5f, -0.5f, -0.5f,        0.0f, -1.0f, 0.0f,
+    -0.5f, -0.5f, 0.5f,        0.0f, -1.0f, 0.0f,
+    -0.5f, -0.5f, 0.5f,        0.0f, -1.0f, 0.0f,
+    0.5f, -0.5f, -0.5f,        0.0f, -1.0f, 0.0f,
+    0.5f, -0.5f, 0.5f,         0.0f, -1.0f, 0.0f,
+    
+    0.5f, 0.5f, 0.5f,          0.0f, 0.0f, 1.0f,
+    -0.5f, 0.5f, 0.5f,         0.0f, 0.0f, 1.0f,
+    0.5f, -0.5f, 0.5f,         0.0f, 0.0f, 1.0f,
+    0.5f, -0.5f, 0.5f,         0.0f, 0.0f, 1.0f,
+    -0.5f, 0.5f, 0.5f,         0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, 0.5f,        0.0f, 0.0f, 1.0f,
+    
+    0.5f, -0.5f, -0.5f,        0.0f, 0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,       0.0f, 0.0f, -1.0f,
+    0.5f, 0.5f, -0.5f,         0.0f, 0.0f, -1.0f,
+    0.5f, 0.5f, -0.5f,         0.0f, 0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,       0.0f, 0.0f, -1.0f,
+    -0.5f, 0.5f, -0.5f,        0.0f, 0.0f, -1.0f
+};
+
+@interface GameViewController : GLKViewController {
+    GLuint _program;
+    
+    float ballY;
+    GLKMatrix4 ballMatrix;
+    GLKMatrix4 _ballProjection;
+    GLKMatrix3 _ballNormal;
+    
+    GLKMatrix4 leftPaddleMatrix;
+    GLKMatrix4 _leftPaddleProjection;
+    GLKMatrix3 _leftPaddleNormal;
+    
+    GLKMatrix4 rightPaddleMatrix;
+    GLKMatrix4 _rightPaddleProjection;
+    GLKMatrix3 _rightPaddleNormal;
+    
+    GLuint _vertexArray;
+    GLuint _vertexBuffer;
+}
+@property (strong, nonatomic) EAGLContext *context;
+@property (strong, nonatomic) GLKBaseEffect *effect;
+
+- (void)setupGL;
+- (void)tearDownGL;
+
+- (BOOL)loadShaders;
+- (BOOL)compileShader:(GLuint *)shader type:(GLenum)type file:(NSString *)file;
+- (BOOL)linkProgram:(GLuint)prog;
+- (BOOL)validateProgram:(GLuint)prog;
+- (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p;
 @end
