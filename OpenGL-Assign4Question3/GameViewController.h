@@ -81,7 +81,6 @@ GLfloat gCubeVertexData[216] =
 @interface GameViewController : GLKViewController {
     GLuint _program;
     
-    float ballY;
     GLKMatrix4 ballMatrix;
     GLKMatrix4 _ballProjection;
     GLKMatrix3 _ballNormal;
@@ -98,9 +97,13 @@ GLfloat gCubeVertexData[216] =
     GLuint _vertexBuffer;
     
     Box2DWrapper *box2D;
+    
+    int scoreLeft;
+    int scoreRight;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
+@property (weak, nonatomic) IBOutlet UILabel *ScoreLabel;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -110,4 +113,5 @@ GLfloat gCubeVertexData[216] =
 - (BOOL)linkProgram:(GLuint)prog;
 - (BOOL)validateProgram:(GLuint)prog;
 - (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p;
+- (void)applyPoint:(BOOL)left;
 @end

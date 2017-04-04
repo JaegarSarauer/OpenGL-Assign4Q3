@@ -27,6 +27,8 @@
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
     box2D = [[Box2DWrapper alloc] init];
     
+    scoreLeft = scoreRight = 0;
+    
     [self setupGL];
 }
 
@@ -88,11 +90,11 @@
     glBindVertexArrayOES(0);
     
     ballMatrix = GLKMatrix4Identity;
-    leftPaddleMatrix = GLKMatrix4MakeTranslation(-20.0, 0.0, 0.0);
-    rightPaddleMatrix = GLKMatrix4MakeTranslation(20.0, 0.0, 0.0);
-    ballY = 0.0;
+    leftPaddleMatrix = GLKMatrix4MakeTranslation(-21.0, 0.0, 0.0);
+    rightPaddleMatrix = GLKMatrix4MakeTranslation(21.0, 0.0, 0.0);
     
     [box2D awakeFromNib];
+    [box2D resetBall:ballMatrix];
 }
 
 - (void)tearDownGL
@@ -116,15 +118,16 @@
 
 - (void)update
 {
+    [box2D drawFrame];
     float aspect = fabs(self.view.bounds.size.width / self.view.bounds.size.height);
     GLKMatrix4 projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0f), aspect, 0.1f, 100.0f);
     self.effect.transform.projectionMatrix = projectionMatrix;
 
     GLKMatrix4 cameraMatrix = GLKMatrix4MakeTranslation(0.0, 0.0, -20.0);
     
-    GLKMatrix4 ballResultMatrix = GLKMatrix4Identity;
-    ballResultMatrix = GLKMatrix4Multiply(ballMatrix, cameraMatrix);
-    ballResultMatrix = GLKMatrix4Translate(ballResultMatrix, 0.0, ballY, 0.0);
+    GLKMatrix4 ballResultMatrix = [box2D updateBall:ballMatrix];
+    ballResultMatrix = GLKMatrix4Multiply(ballResultMatrix, cameraMatrix);
+    //ballResultMatrix = GLKMatrix4Translate(ballResultMatrix, 0.0, ballY, 0.0);
     _ballNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(ballResultMatrix), NULL);
     _ballProjection = GLKMatrix4Multiply(projectionMatrix, ballResultMatrix);
     
@@ -140,14 +143,26 @@
     _rightPaddleNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(rightPaddleResultMatrix), NULL);
     _rightPaddleProjection = GLKMatrix4Multiply(projectionMatrix, rightPaddleResultMatrix);
     
-    //move ball test
+    //move AI
+    leftPaddleMatrix = [box2D moveAI:leftPaddleMatrix];
+    
+    //move ball
     GLKVector3 ballPos = GLKVector3Make(ballResultMatrix.m30, ballResultMatrix.m31, ballResultMatrix.m32);
-    if ([self inScreen:projectionMatrix point:ballPos]) {
-        ballY += 0.1;
+    if (![self inScreen:projectionMatrix point:ballPos]) {
+        BOOL hitLeft = true;
+        if (ballResultMatrix.m30 > 0)
+            hitLeft = false;
+        [self applyPoint:hitLeft];
+        [box2D resetBall:ballMatrix];
     }
-    
-    [box2D drawFrame];
-    
+}
+
+- (void)applyPoint:(BOOL)left {
+    if (left)
+        scoreRight++;
+    else
+        scoreLeft++;
+    _ScoreLabel.text = [NSString stringWithFormat:@"%d : %d", scoreLeft, scoreRight];
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
@@ -326,7 +341,8 @@
 }
 - (IBAction)OnScreenTouch:(UIPanGestureRecognizer *)sender {
     CGPoint point = [sender locationInView:nil];
-    NSLog(@"x: %f y: %f", point.x, point.y);
+    CGFloat height = [UIScreen mainScreen].bounds.size.height;
+    rightPaddleMatrix = [box2D movePlayer:rightPaddleMatrix yPos:(-(point.y - (height / 2)) / 15)];
 }
 
 - (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p {
