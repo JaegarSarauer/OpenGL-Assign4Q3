@@ -16,9 +16,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "Box2D/Common/b2BlockAllocator.h"
+#include <Box2D/Common/b2BlockAllocator.h>
 #include <limits.h>
-#include <string.h>
+#include <memory.h>
 #include <stddef.h>
 
 int32 b2BlockAllocator::s_blockSizes[b2_blockSizes] = 

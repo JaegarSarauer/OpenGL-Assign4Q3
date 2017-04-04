@@ -23,10 +23,6 @@
 #include <assert.h>
 #include <float.h>
 
-#if !defined(NDEBUG)
-	#define b2DEBUG
-#endif
-
 #define B2_NOT_USED(x) ((void)(x))
 #define b2Assert(A) assert(A)
 
@@ -150,6 +146,6 @@ struct b2Version
 };
 
 /// Current version.
-extern struct b2Version b2_version;
+extern b2Version b2_version;
 
 #endif

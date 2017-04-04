@@ -13,8 +13,13 @@
 #import <Foundation/Foundation.h>
 
 @interface Box2DWrapper : NSObject {
-    @private
+    
 }
+
+-(id) init;
+-(void) awakeFromNib;
+-(void) drawFrame;
+-(void) viewDidUnload;
 
 @end
 

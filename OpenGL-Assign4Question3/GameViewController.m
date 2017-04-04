@@ -8,7 +8,6 @@
 
 #import "GameViewController.h"
 #import <OpenGLES/ES2/glext.h>
-#include "Box2DWrapper.h"
 
 
 @implementation GameViewController
@@ -26,6 +25,7 @@
     GLKView *view = (GLKView *)self.view;
     view.context = self.context;
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
+    box2D = [[Box2DWrapper alloc] init];
     
     [self setupGL];
 }
@@ -91,6 +91,8 @@
     leftPaddleMatrix = GLKMatrix4MakeTranslation(-20.0, 0.0, 0.0);
     rightPaddleMatrix = GLKMatrix4MakeTranslation(20.0, 0.0, 0.0);
     ballY = 0.0;
+    
+    [box2D awakeFromNib];
 }
 
 - (void)tearDownGL
@@ -99,6 +101,8 @@
     
     glDeleteBuffers(1, &_vertexBuffer);
     glDeleteVertexArraysOES(1, &_vertexArray);
+    
+    [box2D viewDidUnload];
     
     self.effect = nil;
     
@@ -142,6 +146,7 @@
         ballY += 0.1;
     }
     
+    [box2D drawFrame];
     
 }
 

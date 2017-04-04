@@ -10,6 +10,7 @@
 #include <stdio.h>
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
+#include "Box2DWrapper.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -95,6 +96,8 @@ GLfloat gCubeVertexData[216] =
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
+    
+    Box2DWrapper *box2D;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
