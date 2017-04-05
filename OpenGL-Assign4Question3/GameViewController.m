@@ -8,7 +8,7 @@
 
 #import "GameViewController.h"
 #import <OpenGLES/ES2/glext.h>
-
+#include "CText2D.h"
 
 @implementation GameViewController
 
@@ -28,6 +28,14 @@
     box2D = [[Box2DWrapper alloc] init];
     
     balls = 3;
+    ballsLeftText = [NSString stringWithFormat:@"Balls: %d    ", balls];
+    
+    HUD = [[CText2D alloc] init];
+    HUD.pointSize = 4;
+    HUD.dotsPerInch = 300;
+    CGFloat width = [UIScreen mainScreen].bounds.size.width;
+    [HUD setTextLocation:CGPointMake(width / 4, 30)];
+    
     
     [self setupGL];
 }
@@ -121,7 +129,8 @@
 
 - (void)update
 {
-    _ScoreLabel.text = [NSString stringWithFormat:@"Score: %d", [box2D getScore]];
+    
+    [HUD DrawText:[NSString stringWithFormat:@"%@Score: %d", ballsLeftText, [box2D getScore]] inView:self.view withColor:GLKVector3Make(1, 0, 0)];
     [box2D drawFrame];
     float aspect = fabs(self.view.bounds.size.width / self.view.bounds.size.height);
     GLKMatrix4 projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0f), aspect, 0.1f, 100.0f);
@@ -164,9 +173,9 @@
 - (void)loseBall {
     if (balls > 0) {
         balls--;
-        _BallsLabel.text = [NSString stringWithFormat:@"Balls: %d", balls];
+        ballsLeftText = [NSString stringWithFormat:@"Balls: %d    ", balls];
     } else {
-        _BallsLabel.text = [NSString stringWithFormat:@"Game Over!"];
+        ballsLeftText = [NSString stringWithFormat:@"Game Over!  "];
     }
 }
 

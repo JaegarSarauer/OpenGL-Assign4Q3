@@ -11,6 +11,7 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 #include "Box2DWrapper.h"
+#import "CText2D.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 #define BRICK_COUNT 99
@@ -99,12 +100,12 @@ GLfloat gCubeVertexData[216] =
     
     Box2DWrapper *box2D;
     
+    CText2D *HUD;
+    NSString *ballsLeftText;
     int balls;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
-@property (weak, nonatomic) IBOutlet UILabel *ScoreLabel;
-@property (weak, nonatomic) IBOutlet UILabel *BallsLabel;
 
 - (void)setupGL;
 - (void)tearDownGL;
