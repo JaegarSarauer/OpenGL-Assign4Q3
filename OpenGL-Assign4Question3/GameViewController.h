@@ -13,7 +13,7 @@
 #include "Box2DWrapper.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-#define BRICK_COUNT 20
+#define BRICK_COUNT 99
 
 // Uniform index.
 enum

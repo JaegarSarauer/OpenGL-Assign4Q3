@@ -15,7 +15,7 @@
     b2Body *ball;
     b2Body *paddle;
     
-    b2Body *bricks[20];
+    b2Body *bricks[BRICK_COUNT];
     int score;
 }
 
@@ -61,7 +61,7 @@
     for (int i = 0; i < BRICK_COUNT; i++) {
         b2BodyDef brickBody;
         brickBody.type = b2_staticBody;
-        brickBody.position.Set(-10 + ((i % 12) * 2), 20 - ((int)(i / 12) * 2));
+        brickBody.position.Set(-10 + ((i % 11) * 2), 20 - ((int)(i / 11) * 2));
         
         b2PolygonShape brickShape;
         
@@ -113,13 +113,13 @@
     staticBody->CreateFixture(&myFixtureDef);
     
     
-    ball->SetLinearVelocity(b2Vec2(10, 20));
+    ball->SetLinearVelocity(b2Vec2(10, -20));
 }
 
 -(GLKMatrix4)getBrick:(int)i {
     if (![self canDrawBrick:i])
         return GLKMatrix4Identity;
-    GLKMatrix4 res = GLKMatrix4MakeTranslation(-10 + ((i % 12) * 2), 20 - ((int)(i / 12) * 2), 0.0);
+    GLKMatrix4 res = GLKMatrix4MakeTranslation(-10 + ((i % 11) * 2), 20 - ((int)(i / 11) * 2), 0.0);
     return res;
 }
 

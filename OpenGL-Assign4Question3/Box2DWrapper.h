@@ -8,7 +8,7 @@
 
 #ifndef BOX2DWRAPPER_H
 #define BOX2DWRAPPER_H
-#define BRICK_COUNT 20
+#define BRICK_COUNT 99
 
 #define BRICK_ID 4
 #define BRICK_HIT_ID 5
