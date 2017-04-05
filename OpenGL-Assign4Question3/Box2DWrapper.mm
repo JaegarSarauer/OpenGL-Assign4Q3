@@ -13,7 +13,10 @@
 @interface Box2DWrapper() {
     b2World* world;
     b2Body *ball;
-    b2Body *paddleLeft, *paddleRight;
+    b2Body *paddle;
+    
+    b2Body *bricks[20];
+    int score;
 }
 
 @end
@@ -53,14 +56,31 @@
     ball->CreateFixture(&circleFixtureDef);
     ball->SetActive(true);
     
-    //paddle setup
-    b2BodyDef leftBody;
-    leftBody.type = b2_staticBody;
-    leftBody.position.Set(-21, 0);
     
-    b2BodyDef rightBody;
-    rightBody.type = b2_staticBody;
-    rightBody.position.Set(21, 0);
+    //bricks setup
+    for (int i = 0; i < BRICK_COUNT; i++) {
+        b2BodyDef brickBody;
+        brickBody.type = b2_staticBody;
+        brickBody.position.Set(-10 + ((i % 12) * 2), 20 - ((int)(i / 12) * 2));
+        
+        b2PolygonShape brickShape;
+        
+        b2FixtureDef brickFix;
+        brickFix.shape = &brickShape;
+        brickFix.density = 1;
+        
+        bricks[i] = world->CreateBody(&brickBody);
+        brickShape.SetAsBox( 1, 1, b2Vec2(0, 0), 0);//paddle
+        bricks[i]->CreateFixture(&brickFix);
+        bricks[i]->SetActive(true);
+        bricks[i]->SetUserData((void *)BRICK_ID);
+    }
+    
+    
+    //paddle setup
+    b2BodyDef paddleBody;
+    paddleBody.type = b2_staticBody;
+    paddleBody.position.Set(0, -18);
     
     b2PolygonShape paddleShape;
     
@@ -68,13 +88,9 @@
     paddleFix.shape = &paddleShape;
     paddleFix.density = 1;
     
-    paddleLeft = world->CreateBody(&leftBody);
-    paddleShape.SetAsBox( 1, 2, b2Vec2(0, 0), 0);//left paddle
-    paddleLeft->CreateFixture(&paddleFix);
-    
-    paddleRight = world->CreateBody(&rightBody);
-    paddleShape.SetAsBox( 1, 2, b2Vec2(0, 0), 0);//right paddle
-    paddleRight->CreateFixture(&paddleFix);
+    paddle = world->CreateBody(&paddleBody);
+    paddleShape.SetAsBox( 2, 1, b2Vec2(0, 0), 0);//paddle
+    paddle->CreateFixture(&paddleFix);
     
     
     
@@ -89,18 +105,37 @@
     myBodyDef.type = b2_staticBody;
     myBodyDef.position.Set(0, 0);
     b2Body* staticBody = world->CreateBody(&myBodyDef);
-    polygonShape.SetAsBox( 30, 1, b2Vec2(0, -14), 0);//ground
+    polygonShape.SetAsBox( 1, 60, b2Vec2(-15.5, 0), 0);//left
     staticBody->CreateFixture(&myFixtureDef);
-    polygonShape.SetAsBox( 30, 1, b2Vec2(0, 14), 0);//ceiling
+    polygonShape.SetAsBox( 1, 60, b2Vec2(15.5, 0), 0);//right
+    staticBody->CreateFixture(&myFixtureDef);
+    polygonShape.SetAsBox( 40, 1, b2Vec2(0, 27), 0);//ceiling
     staticBody->CreateFixture(&myFixtureDef);
     
     
     ball->SetLinearVelocity(b2Vec2(10, 20));
 }
 
+-(GLKMatrix4)getBrick:(int)i {
+    if (![self canDrawBrick:i])
+        return GLKMatrix4Identity;
+    GLKMatrix4 res = GLKMatrix4MakeTranslation(-10 + ((i % 12) * 2), 20 - ((int)(i / 12) * 2), 0.0);
+    return res;
+}
+
+-(BOOL) canDrawBrick:(int)i {
+    return bricks[i]->IsActive();
+}
+
 -(void) drawFrame {
     world->Step(1/60.0f, 8, 3);
-    world->DrawDebugData();
+    for (int i = 0; i < BRICK_COUNT; i++) {
+        if ((int)bricks[i]->GetUserData() == BRICK_HIT_ID) {
+            bricks[i]->SetActive(false);
+            bricks[i]->SetUserData((void *)BRICK_ID);
+            score += 10;
+        }
+    }
 }
 
 -(GLKMatrix4) updateBall:(GLKMatrix4)bM {
@@ -116,35 +151,15 @@
 }
 
 
--(GLKMatrix4) moveAI:(GLKMatrix4)bM {
-    b2Vec2 pos = paddleLeft->GetPosition();
-    float restY = pos.y;
-    float ballY = ball->GetPosition().y;
-    if (restY + 1 < ballY)
-        restY += 0.25;
-    if (restY - 1 > ballY)
-        restY -= 0.25;
-    if (restY > 14)
-        restY = 14;
-    if (restY < -14)
-        restY = -14;
-    b2Vec2 newPos = b2Vec2(pos.x, restY);
-    paddleLeft->SetTransform(newPos, 0);
-    
-    GLKMatrix4 newPaddle = bM;
-    newPaddle = GLKMatrix4Translate(GLKMatrix4Identity, newPos.x, newPos.y, 0.0);
-    return newPaddle;
-}
-
--(GLKMatrix4) movePlayer:(GLKMatrix4)bM yPos:(float)y {
-    b2Vec2 pos = paddleRight->GetPosition();
-    float restY = y;
-    if (restY > 14)
-        restY = 14;
-    if (restY < -14)
-        restY = -14;
-    b2Vec2 newPos = b2Vec2(pos.x, restY);
-    paddleRight->SetTransform(newPos, 0);
+-(GLKMatrix4) movePlayer:(GLKMatrix4)bM xPos:(float)x {
+    b2Vec2 pos = paddle->GetPosition();
+    float restX = x;
+    if (restX > 12)
+        restX = 12;
+    if (restX < -12)
+        restX = -12;
+    b2Vec2 newPos = b2Vec2(restX, pos.y);
+    paddle->SetTransform(newPos, 0);
     
     GLKMatrix4 newPaddle = bM;
     newPaddle = GLKMatrix4Translate(GLKMatrix4Identity, newPos.x, newPos.y, 0.0);
@@ -152,7 +167,9 @@
 }
 
 
-
+-(int)getScore {
+    return score;
+}
 
 
 
@@ -174,6 +191,9 @@ public:
         {
             // Use contact->GetFixtureA()->GetBody() to get the body
             b2Body* bodyA = contact->GetFixtureA()->GetBody();
+            if ((int)bodyA->GetUserData() == BRICK_ID) {
+                bodyA->SetUserData((void *)BRICK_HIT_ID);
+            }
         }
     }
     void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) {};

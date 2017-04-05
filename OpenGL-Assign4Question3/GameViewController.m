@@ -27,7 +27,7 @@
     view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
     box2D = [[Box2DWrapper alloc] init];
     
-    scoreLeft = scoreRight = 0;
+    balls = 3;
     
     [self setupGL];
 }
@@ -90,8 +90,11 @@
     glBindVertexArrayOES(0);
     
     ballMatrix = GLKMatrix4Identity;
-    leftPaddleMatrix = GLKMatrix4MakeTranslation(-21.0, 0.0, 0.0);
-    rightPaddleMatrix = GLKMatrix4MakeTranslation(21.0, 0.0, 0.0);
+    paddleMatrix = GLKMatrix4MakeTranslation(0.0, -18.0, 0.0);
+    
+    for (int i = 0; i < BRICK_COUNT; i++) {
+        brickMatrix[i] = GLKMatrix4Identity;
+    }
     
     [box2D awakeFromNib];
     [box2D resetBall:ballMatrix];
@@ -118,12 +121,13 @@
 
 - (void)update
 {
+    _ScoreLabel.text = [NSString stringWithFormat:@"Score: %d", [box2D getScore]];
     [box2D drawFrame];
     float aspect = fabs(self.view.bounds.size.width / self.view.bounds.size.height);
     GLKMatrix4 projectionMatrix = GLKMatrix4MakePerspective(GLKMathDegreesToRadians(65.0f), aspect, 0.1f, 100.0f);
     self.effect.transform.projectionMatrix = projectionMatrix;
 
-    GLKMatrix4 cameraMatrix = GLKMatrix4MakeTranslation(0.0, 0.0, -20.0);
+    GLKMatrix4 cameraMatrix = GLKMatrix4MakeTranslation(0.0, 0.0, -40.0);
     
     GLKMatrix4 ballResultMatrix = [box2D updateBall:ballMatrix];
     ballResultMatrix = GLKMatrix4Multiply(ballResultMatrix, cameraMatrix);
@@ -131,38 +135,39 @@
     _ballNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(ballResultMatrix), NULL);
     _ballProjection = GLKMatrix4Multiply(projectionMatrix, ballResultMatrix);
     
-    GLKMatrix4 leftPaddleResultMatrix = GLKMatrix4Identity;
-    leftPaddleResultMatrix = GLKMatrix4Multiply(leftPaddleMatrix, cameraMatrix);
-    leftPaddleResultMatrix = GLKMatrix4Scale(leftPaddleResultMatrix, 1.0, 4.0, 1.0);
-    _leftPaddleNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(leftPaddleResultMatrix), NULL);
-    _leftPaddleProjection = GLKMatrix4Multiply(projectionMatrix, leftPaddleResultMatrix);
+    GLKMatrix4 paddleResultMatrix = GLKMatrix4Identity;
+    paddleResultMatrix = GLKMatrix4Multiply(paddleMatrix, cameraMatrix);
+    paddleResultMatrix = GLKMatrix4Scale(paddleResultMatrix, 4.0, 1.0, 1.0);
+    _paddleNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(paddleResultMatrix), NULL);
+    _paddleProjection = GLKMatrix4Multiply(projectionMatrix, paddleResultMatrix);
     
-    GLKMatrix4 rightPaddleResultMatrix = GLKMatrix4Identity;
-    rightPaddleResultMatrix = GLKMatrix4Multiply(rightPaddleMatrix, cameraMatrix);
-    rightPaddleResultMatrix = GLKMatrix4Scale(rightPaddleResultMatrix, 1.0, 4.0, 1.0);
-    _rightPaddleNormal = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(rightPaddleResultMatrix), NULL);
-    _rightPaddleProjection = GLKMatrix4Multiply(projectionMatrix, rightPaddleResultMatrix);
+    //calculate brick positions
+    for (int i = 0; i < BRICK_COUNT; i++) {
+        if ([box2D canDrawBrick:i]) {
+            brickMatrix[i] = [box2D getBrick:i];
+            brickMatrix[i] = GLKMatrix4Multiply(brickMatrix[i], cameraMatrix);
+            brickMatrix[i] = GLKMatrix4Scale(brickMatrix[i], 2.0, 2.0, 1.0);
+            _brickNormal[i] = GLKMatrix3InvertAndTranspose(GLKMatrix4GetMatrix3(brickMatrix[i]), NULL);
+            _brickProjection[i] = GLKMatrix4Multiply(projectionMatrix, brickMatrix[i]);
+        }
+    }
     
-    //move AI
-    leftPaddleMatrix = [box2D moveAI:leftPaddleMatrix];
-    
-    //move ball
+    //test ball bounds
     GLKVector3 ballPos = GLKVector3Make(ballResultMatrix.m30, ballResultMatrix.m31, ballResultMatrix.m32);
     if (![self inScreen:projectionMatrix point:ballPos]) {
-        BOOL hitLeft = true;
-        if (ballResultMatrix.m30 > 0)
-            hitLeft = false;
-        [self applyPoint:hitLeft];
-        [box2D resetBall:ballMatrix];
+        [self loseBall];
+        if (balls > 0)
+            [box2D resetBall:ballMatrix];
     }
 }
 
-- (void)applyPoint:(BOOL)left {
-    if (left)
-        scoreRight++;
-    else
-        scoreLeft++;
-    _ScoreLabel.text = [NSString stringWithFormat:@"%d : %d", scoreLeft, scoreRight];
+- (void)loseBall {
+    if (balls > 0) {
+        balls--;
+        _BallsLabel.text = [NSString stringWithFormat:@"Balls: %d", balls];
+    } else {
+        _BallsLabel.text = [NSString stringWithFormat:@"Game Over!"];
+    }
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
@@ -179,13 +184,17 @@
     glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _ballNormal.m);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     
-    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _leftPaddleProjection.m);
-    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _leftPaddleNormal.m);
+    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _paddleProjection.m);
+    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _paddleNormal.m);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     
-    glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _rightPaddleProjection.m);
-    glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _rightPaddleNormal.m);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for (int i = 0; i < BRICK_COUNT; i++) {
+        if ([box2D canDrawBrick:i]) {
+            glUniformMatrix4fv(uniforms[UNIFORM_MODELVIEWPROJECTION_MATRIX], 1, 0, _brickProjection[i].m);
+            glUniformMatrix3fv(uniforms[UNIFORM_NORMAL_MATRIX], 1, 0, _brickNormal[i].m);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+    }
 }
 
 #pragma mark -  OpenGL ES 2 shader compilation
@@ -341,8 +350,8 @@
 }
 - (IBAction)OnScreenTouch:(UIPanGestureRecognizer *)sender {
     CGPoint point = [sender locationInView:nil];
-    CGFloat height = [UIScreen mainScreen].bounds.size.height;
-    rightPaddleMatrix = [box2D movePlayer:rightPaddleMatrix yPos:(-(point.y - (height / 2)) / 15)];
+    CGFloat width = [UIScreen mainScreen].bounds.size.width;
+    paddleMatrix = [box2D movePlayer:paddleMatrix xPos:((point.x - (width / 2)) / 12)];
 }
 
 - (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p {

@@ -13,6 +13,7 @@
 #include "Box2DWrapper.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#define BRICK_COUNT 20
 
 // Uniform index.
 enum
@@ -85,25 +86,25 @@ GLfloat gCubeVertexData[216] =
     GLKMatrix4 _ballProjection;
     GLKMatrix3 _ballNormal;
     
-    GLKMatrix4 leftPaddleMatrix;
-    GLKMatrix4 _leftPaddleProjection;
-    GLKMatrix3 _leftPaddleNormal;
+    GLKMatrix4 paddleMatrix;
+    GLKMatrix4 _paddleProjection;
+    GLKMatrix3 _paddleNormal;
     
-    GLKMatrix4 rightPaddleMatrix;
-    GLKMatrix4 _rightPaddleProjection;
-    GLKMatrix3 _rightPaddleNormal;
+    GLKMatrix4 brickMatrix[BRICK_COUNT];
+    GLKMatrix4 _brickProjection[BRICK_COUNT];
+    GLKMatrix3 _brickNormal[BRICK_COUNT];
     
     GLuint _vertexArray;
     GLuint _vertexBuffer;
     
     Box2DWrapper *box2D;
     
-    int scoreLeft;
-    int scoreRight;
+    int balls;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
 @property (weak, nonatomic) IBOutlet UILabel *ScoreLabel;
+@property (weak, nonatomic) IBOutlet UILabel *BallsLabel;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -113,5 +114,5 @@ GLfloat gCubeVertexData[216] =
 - (BOOL)linkProgram:(GLuint)prog;
 - (BOOL)validateProgram:(GLuint)prog;
 - (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p;
-- (void)applyPoint:(BOOL)left;
+- (void)loseBall;
 @end
