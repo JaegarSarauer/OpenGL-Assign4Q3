@@ -9,6 +9,7 @@
 #include <Box2D/Box2D.h>
 #include "Box2DWrapper.h"
 #import <OpenGLES/ES2/glext.h>
+#include "CText2D.h"
 
 @interface Box2DWrapper() {
     b2World* world;

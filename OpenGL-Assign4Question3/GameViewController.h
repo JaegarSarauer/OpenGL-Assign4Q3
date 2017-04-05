@@ -11,6 +11,7 @@
 #import <UIKit/UIKit.h>
 #import <GLKit/GLKit.h>
 #include "Box2DWrapper.h"
+#include "CText2D.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -100,10 +101,11 @@ GLfloat gCubeVertexData[216] =
     
     int scoreLeft;
     int scoreRight;
+    
+    CText2D *theHUD;
 }
 @property (strong, nonatomic) EAGLContext *context;
 @property (strong, nonatomic) GLKBaseEffect *effect;
-@property (weak, nonatomic) IBOutlet UILabel *ScoreLabel;
 
 - (void)setupGL;
 - (void)tearDownGL;
@@ -112,6 +114,6 @@ GLfloat gCubeVertexData[216] =
 - (BOOL)compileShader:(GLuint *)shader type:(GLenum)type file:(NSString *)file;
 - (BOOL)linkProgram:(GLuint)prog;
 - (BOOL)validateProgram:(GLuint)prog;
-- (BOOL) inScreen:(GLKMatrix4)M point:(GLKVector3)p;
+- (BOOL)inScreen:(GLKMatrix4)M point:(GLKVector3)p;
 - (void)applyPoint:(BOOL)left;
 @end

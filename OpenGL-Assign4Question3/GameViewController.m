@@ -95,6 +95,17 @@
     
     [box2D awakeFromNib];
     [box2D resetBall:ballMatrix];
+    
+    // 2D text for a HUD
+    theHUD = [[CText2D alloc] init];
+    theHUD.pointSize = 11;
+    theHUD.dotsPerInch = 100;
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGSize screenSize = screenBound.size;
+    CGFloat screenWidth = screenSize.width;
+    [theHUD setTextLocation:CGPointMake(screenWidth / 2.0f, 30)];
+    
+    [theHUD DrawText:[NSString stringWithFormat:@"%d : %d", 0, 0] inView:self.view withColor:GLKVector3Make(0, 0, 0)];
 }
 
 - (void)tearDownGL
@@ -162,7 +173,7 @@
         scoreRight++;
     else
         scoreLeft++;
-    _ScoreLabel.text = [NSString stringWithFormat:@"%d : %d", scoreLeft, scoreRight];
+    [theHUD DrawText:[NSString stringWithFormat:@"%d : %d", scoreLeft, scoreRight] inView:self.view withColor:GLKVector3Make(0, 0, 0)];
 }
 
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
