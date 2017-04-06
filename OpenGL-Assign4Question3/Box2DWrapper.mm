@@ -130,7 +130,7 @@
 -(void) drawFrame {
     world->Step(1/60.0f, 8, 3);
     for (int i = 0; i < BRICK_COUNT; i++) {
-        if ((int)bricks[i]->GetUserData() == BRICK_HIT_ID) {
+        if ((size_t)bricks[i]->GetUserData() == BRICK_HIT_ID) {
             bricks[i]->SetActive(false);
             bricks[i]->SetUserData((void *)BRICK_ID);
             score += 10;
@@ -191,7 +191,7 @@ public:
         {
             // Use contact->GetFixtureA()->GetBody() to get the body
             b2Body* bodyA = contact->GetFixtureA()->GetBody();
-            if ((int)bodyA->GetUserData() == BRICK_ID) {
+            if ((size_t)bodyA->GetUserData() == BRICK_ID) {
                 bodyA->SetUserData((void *)BRICK_HIT_ID);
             }
         }
